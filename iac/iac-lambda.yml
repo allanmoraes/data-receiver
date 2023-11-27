@@ -1,0 +1,180 @@
+Description: Create App Env
+
+Parameters:
+  NetworkStackName:
+    Type: String
+    Default: Network
+  S3BucketStackName:
+    Type: String
+    Default: S3-lambda-data-receiver
+  DynamoDBStackName:
+    Type: String
+    Default: dynamodb-data-receiver-app
+  EnvironmentName:
+    Type: String
+    Default: production
+  OwnerTeam:
+    Type: String
+    Default: development
+  Project:
+    Type: String
+    Default: https://github.com/allanmoraes/lambda-data-receiver
+  S3Key:
+    Type: String
+    Default: production/python/lambda-date-receiver-20231126161048.zip
+  LambdaFunctionName:
+    Type: String
+    Default: lambda-data-receiver
+  LambdaSecurityGroupName:
+    Type: String
+    Default: lambda-data-receiver-sg
+  LambdaExecutionRoleName:
+    Type: String
+    Default: lambda-data-receiver-role
+
+Resources:
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref LambdaSecurityGroupName
+      GroupDescription: 'Security Group for Lambda Function'
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: "${NetworkStackName}-VPCId"
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PublicSubnet1CidrBlock"
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PublicSubnet2CidrBlock"
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PublicSubnet3CidrBlock"
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PrimaryCidrBlock"
+      Tags:
+        - Key: Name
+          Value: !Sub ${LambdaSecurityGroupName}
+        - Key: managedby
+          Value: cloudformation
+        - Key: owner-team
+          Value: !Sub ${OwnerTeam}
+        - Key: project
+          Value: !Sub ${Project}
+
+  LambdaFunction:
+      Type: AWS::Lambda::Function
+      Properties:
+        FunctionName: !Sub ${EnvironmentName}-${LambdaFunctionName}
+        Handler: lambda_function.lambda_handler
+        Role: !GetAtt LambdaExecutionRole.Arn 
+        Runtime: python3.11
+        Code: 
+          S3Bucket:
+            Fn::ImportValue:
+                  Fn::Sub: "${S3BucketStackName}-S3BucketAppName"
+          S3Key: !Sub ${S3Key}
+        Environment:
+          Variables:
+            DYNAMODB_TABLE_NAME:
+               Fn::ImportValue:
+                  Fn::Sub: "${DynamoDBStackName}-DataReceiverDynamoDBTableName"
+        VpcConfig:
+          SecurityGroupIds:
+            - !Ref LambdaSecurityGroup
+          SubnetIds:
+            - Fn::ImportValue:
+                Fn::Sub: "${NetworkStackName}-PrivateSubnet1Id"
+            - Fn::ImportValue:
+                Fn::Sub: "${NetworkStackName}-PrivateSubnet2Id"
+            - Fn::ImportValue:
+                Fn::Sub: "${NetworkStackName}-PrivateSubnet3Id"
+        Tags:
+          - Key: Name
+            Value: !Sub ${EnvironmentName}-${LambdaFunctionName}
+          - Key: managedby
+            Value: cloudformation
+          - Key: owner-team
+            Value: !Sub ${OwnerTeam}
+          - Key: project
+            Value: !Sub ${Project}
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref LambdaExecutionRoleName
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LogsWritePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: '*'
+        - PolicyName: S3ReadPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - Fn::ImportValue:
+                      Fn::Sub: "${S3BucketStackName}-S3BucketAppArn"
+                  - Fn::ImportValue:
+                      Fn::Sub: "${S3BucketStackName}-S3BucketAppArn"
+        - PolicyName: LambdaNetworkPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ec2:DescribeNetworkInterfaces
+                  - ec2:CreateNetworkInterface
+                  - ec2:DeleteNetworkInterface
+                  - ec2:AttachNetworkInterface
+                  - ec2:CreateTags
+                Resource: '*'
+        - PolicyName: DynamoDBWritePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'dynamodb:PutItem'
+                  - 'dynamodb:UpdateItem'
+                Resource:
+                  - Fn::ImportValue:
+                      Fn::Sub: "${DynamoDBStackName}-DataReceiverDynamoDBTableARN"
+      Tags:
+        - Key: managedby
+          Value: cloudformation
+        - Key: owner-team
+          Value: !Sub ${OwnerTeam}
+        - Key: project
+          Value: !Sub ${Project}
+
+Outputs:
+  LambdaFunctionArn:
+    Description: 'ARN da Lambda Function'
+    Value: !GetAtt LambdaFunction.Arn
+    Export:
+      Name: "lambda-data-receiver-app-LambdaFunctionArn"
