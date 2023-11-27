@@ -1,0 +1,58 @@
+Description: Create DynamoDB Table
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: production
+  DynamoDBTableName:
+    Type: String
+    Default: persons
+  OwnerTeam:
+    Type: String
+    Default: development
+  Project:
+    Type: String
+    Default: https://github.com/allanmoraes/lambda-data-receiver
+  WriteDynamoDBRoleName:
+    Type: String
+    Default: LambdaWriteDynamoDBRole
+  ReadDynamoDBRoleName:
+    Type: String
+    Default: LambdaReadDynamoDBRole  
+
+Resources:
+  DataReceiverDynamoDBTable:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: !Ref DynamoDBTableName
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: N
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${DynamoDBTableName}-Table
+        - Key: managedby
+          Value: cloudformation
+        - Key: owner-team
+          Value: !Sub ${OwnerTeam}
+        - Key: project
+          Value: !Sub ${Project}
+
+Outputs:
+  DataReceiverDynamoDBTable:
+    Description: A reference to the created DynamoDB table
+    Value: !Ref DataReceiverDynamoDBTable
+    Export:
+      Name: !Sub 'dynamodb-data-receiver-app-DataReceiverDynamoDBTableName'
+
+  DataReceiverDynamoDBTableARN:
+    Description: A reference to the created DynamoDB table
+    Value: !GetAtt DataReceiverDynamoDBTable.Arn
+    Export:
+      Name: !Sub 'dynamodb-data-receiver-app-DataReceiverDynamoDBTableARN'
