@@ -1,0 +1,123 @@
+Description: Create ALB to trigger Lambda Function
+
+Parameters:
+  LoadBalancerName:
+    Type: String
+    Default: lambda-data-receiver-alb
+  NetworkStackName:
+    Type: String
+    Default: Network
+  LambdaStackName:
+    Type: String
+    Default: lambda-data-receiver-app
+  SecurityGroupName:
+    Type: String
+    Default: alb-lambida-data-receiver-sg
+  EnvironmentName:
+    Type: String
+    Default: production
+  OwnerTeam:
+    Type: String
+    Default: development
+  Project:
+    Type: String
+    Default: https://github.com/allanmoraes/lambda-data-receiver
+
+Resources:
+
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Ref SecurityGroupName
+      GroupDescription: 'Security Group for ALB External'
+      VpcId:
+        Fn::ImportValue:
+          Fn::Sub: "${NetworkStackName}-VPCId"
+      SecurityGroupIngress:
+        - IpProtocol: -1
+          CidrIp: '0.0.0.0/0'
+          FromPort: 80
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PublicSubnet1CidrBlock"
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PublicSubnet2CidrBlock"
+        - IpProtocol: -1
+          CidrIp:
+            Fn::ImportValue:
+              Fn::Sub: "${NetworkStackName}-PublicSubnet3CidrBlock"
+      Tags:
+        - Key: Name
+          Value: !Sub ${SecurityGroupName}
+        - Key: managedby
+          Value: cloudformation
+        - Key: owner-team
+          Value: !Sub ${OwnerTeam}
+        - Key: project
+          Value: !Sub ${Project}
+        - Key: scope
+          Value: public
+
+  LambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName:
+        Fn::ImportValue:
+          Fn::Sub: "${LambdaStackName}-LambdaFunctionArn"
+      Action: lambda:InvokeFunction
+      Principal: elasticloadbalancing.amazonaws.com
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+        - Fn::ImportValue:
+            Fn::Sub: "${NetworkStackName}-PublicSubnet1Id"
+        - Fn::ImportValue:
+            Fn::Sub: "${NetworkStackName}-PublicSubnet2Id"
+        - Fn::ImportValue:
+            Fn::Sub: "${NetworkStackName}-PublicSubnet3Id"
+      SecurityGroups:
+        - !Ref SecurityGroup
+      Scheme: internet-facing
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '60'
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName}-${LoadBalancerName}
+        - Key: managedby
+          Value: cloudformation
+        - Key: owner-team
+          Value: !Sub ${OwnerTeam}
+        - Key: project
+          Value: !Sub ${Project}
+
+  TargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: LambdaPermission
+    HealthCheckEnabled: false
+    Properties:
+      TargetType: lambda
+      Targets:
+        - Id: 
+            Fn::ImportValue:
+              Fn::Sub: "${LambdaStackName}-LambdaFunctionArn"
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - TargetGroupArn: !Ref TargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+
+Outputs:
+  DNSName:
+    Value: !GetAtt LoadBalancer.DNSName

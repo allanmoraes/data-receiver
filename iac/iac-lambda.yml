@@ -21,7 +21,7 @@ Parameters:
     Default: https://github.com/allanmoraes/lambda-data-receiver
   S3Key:
     Type: String
-    Default: production/python/lambda-date-receiver-20231126161048.zip
+    Default: production/python/lambda-date-receiver-20231127163241.zip
   LambdaFunctionName:
     Type: String
     Default: lambda-data-receiver
@@ -173,6 +173,12 @@ Resources:
           Value: !Sub ${Project}
 
 Outputs:
+  LambdaFunctionName:
+    Description: 'ARN da Lambda Function'
+    Value: !Ref LambdaFunction
+    Export:
+      Name: "lambda-data-receiver-app-LambdaFunctionName"
+
   LambdaFunctionArn:
     Description: 'ARN da Lambda Function'
     Value: !GetAtt LambdaFunction.Arn
