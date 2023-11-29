@@ -6,10 +6,10 @@ Parameters:
     Default: Network
   S3BucketStackName:
     Type: String
-    Default: S3-lambda-data-receiver
+    Default: s3-lambda-data-receiver
   DynamoDBStackName:
     Type: String
-    Default: dynamodb-data-receiver-app
+    Default: dynamodb-lambda-data-receiver
   EnvironmentName:
     Type: String
     Default: production
@@ -21,7 +21,6 @@ Parameters:
     Default: https://github.com/allanmoraes/lambda-data-receiver
   S3Key:
     Type: String
-    Default: production/python/lambda-date-receiver-20231127163241.zip
   LambdaFunctionName:
     Type: String
     Default: lambda-data-receiver
@@ -86,16 +85,9 @@ Resources:
             DYNAMODB_TABLE_NAME:
                Fn::ImportValue:
                   Fn::Sub: "${DynamoDBStackName}-DataReceiverDynamoDBTableName"
-        VpcConfig:
-          SecurityGroupIds:
-            - !Ref LambdaSecurityGroup
-          SubnetIds:
-            - Fn::ImportValue:
-                Fn::Sub: "${NetworkStackName}-PrivateSubnet1Id"
-            - Fn::ImportValue:
-                Fn::Sub: "${NetworkStackName}-PrivateSubnet2Id"
-            - Fn::ImportValue:
-                Fn::Sub: "${NetworkStackName}-PrivateSubnet3Id"
+        Timeout: 30
+        MemorySize: 256
+
         Tags:
           - Key: Name
             Value: !Sub ${EnvironmentName}-${LambdaFunctionName}
@@ -128,7 +120,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: '*'
-        - PolicyName: S3ReadPolicy
+        - PolicyName: S3RWPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
@@ -136,30 +128,25 @@ Resources:
                 Action:
                   - 's3:GetObject'
                   - 's3:ListBucket'
+                  - 's3:PutObject'
                 Resource:
                   - Fn::ImportValue:
                       Fn::Sub: "${S3BucketStackName}-S3BucketAppArn"
                   - Fn::ImportValue:
-                      Fn::Sub: "${S3BucketStackName}-S3BucketAppArn"
-        - PolicyName: LambdaNetworkPolicy
+                      Fn::Sub: "${S3BucketStackName}-S3BucketExportArn"
+        - PolicyName: DynamoDBRWPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - ec2:DescribeNetworkInterfaces
-                  - ec2:CreateNetworkInterface
-                  - ec2:DeleteNetworkInterface
-                  - ec2:AttachNetworkInterface
-                  - ec2:CreateTags
-                Resource: '*'
-        - PolicyName: DynamoDBWritePolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - 'dynamodb:PutItem'
+                  - 'dynamodb:BatchGetItem'
+                  - 'dynamodb:BatchWriteItem'
+                  - 'dynamodb:PutItem' 
+                  - 'dynamodb:DeleteItem'
+                  - 'dynamodb:GetItem'
+                  - 'dynamodb:Scan'
+                  - 'dynamodb:Query'
                   - 'dynamodb:UpdateItem'
                 Resource:
                   - Fn::ImportValue:
@@ -177,10 +164,10 @@ Outputs:
     Description: 'ARN da Lambda Function'
     Value: !Ref LambdaFunction
     Export:
-      Name: "lambda-data-receiver-app-LambdaFunctionName"
+      Name: "lambda-data-receiver-LambdaFunctionName"
 
   LambdaFunctionArn:
     Description: 'ARN da Lambda Function'
     Value: !GetAtt LambdaFunction.Arn
     Export:
-      Name: "lambda-data-receiver-app-LambdaFunctionArn"
+      Name: "lambda-data-receiver-LambdaFunctionArn"

@@ -26,14 +26,14 @@ Resources:
     Properties:
       TableName: !Ref DynamoDBTableName
       AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: N
+        - AttributeName: name
+          AttributeType: S
       KeySchema:
-        - AttributeName: id
+        - AttributeName: name
           KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-${DynamoDBTableName}-Table
@@ -49,10 +49,10 @@ Outputs:
     Description: A reference to the created DynamoDB table
     Value: !Ref DataReceiverDynamoDBTable
     Export:
-      Name: !Sub 'dynamodb-data-receiver-app-DataReceiverDynamoDBTableName'
+      Name: 'dynamodb-lambda-data-receiver-DataReceiverDynamoDBTableName'
 
   DataReceiverDynamoDBTableARN:
     Description: A reference to the created DynamoDB table
     Value: !GetAtt DataReceiverDynamoDBTable.Arn
     Export:
-      Name: !Sub 'dynamodb-data-receiver-app-DataReceiverDynamoDBTableARN'
+      Name: 'dynamodb-lambda-data-receiver-DataReceiverDynamoDBTableARN'

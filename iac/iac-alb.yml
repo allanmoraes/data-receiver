@@ -9,7 +9,7 @@ Parameters:
     Default: Network
   LambdaStackName:
     Type: String
-    Default: lambda-data-receiver-app
+    Default: lambda-data-receiver
   SecurityGroupName:
     Type: String
     Default: alb-lambida-data-receiver-sg
@@ -86,7 +86,7 @@ Resources:
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
-          Value: '60'
+          Value: '120'
       Tags:
         - Key: Name
           Value: !Sub ${EnvironmentName}-${LoadBalancerName}
@@ -100,11 +100,10 @@ Resources:
   TargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     DependsOn: LambdaPermission
-    HealthCheckEnabled: false
     Properties:
       TargetType: lambda
       Targets:
-        - Id: 
+        - Id:
             Fn::ImportValue:
               Fn::Sub: "${LambdaStackName}-LambdaFunctionArn"
 
@@ -117,6 +116,19 @@ Resources:
       LoadBalancerArn: !Ref LoadBalancer
       Port: 80
       Protocol: HTTP
+
+  ALBListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - Type: forward
+          TargetGroupArn: !Ref TargetGroup
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /
+      ListenerArn: !Ref Listener
+      Priority: 1
 
 Outputs:
   DNSName:
