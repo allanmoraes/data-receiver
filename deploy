@@ -1,0 +1,104 @@
+#!/bin/bash
+
+check()
+{
+    awscheck=$(aws sts get-caller-identity)
+
+    if [ "$?" -ne 0 ]
+    then
+        echo "Something went wrong whit your AWS credentials"
+    else
+        echo -e "Your AWS Account:\n$awscheck"
+        read -p "Dou you want to continue? (yes/no) " answer
+        if [ "$answer" == "no" ]
+        then
+            exit
+        fi
+        echo -e "\n"
+        stackcheck=$(aws cloudformation describe-stacks|grep  "StackName"|grep "Network")
+        if [ "$?" -ne 0 ]
+        then
+            echo "You hate to create the Network Stack first"
+        else
+            echo "Starting..."
+        fi
+    fi
+}
+create3() 
+{
+    echo -e "\nCreating Stack s3-data-receiver\n"
+    aws cloudformation deploy \
+    --template-file iac/iac-s3.yml \
+    --stack-name s3-data-receiver
+}
+upload-artifact()
+{
+    echo -e "\nUploading Python Code to S3 Bucket\n"
+    cd app
+    zipname="latest-"$(date +'%Y%m%d%H%M%S')
+    echo "S3Key=production/python/$zipname.zip" > ../iac/application.parameter
+    zip -r $zipname.zip lambda_function.py
+    aws s3 cp $zipname.zip s3://lambda-data-receiver/production/python/
+    cd ..
+}
+create-dynamodb()
+{
+    echo -e "\nCreating Stack dynamodb-data-receiver\n"
+    aws cloudformation deploy \
+    --template-file iac/iac-dynamodb.yml \
+    --stack-name dynamodb-data-receiver
+}
+create-lambda()
+{
+    param=$(cat iac/application.parameter)
+    echo -e "\nCreating Stack lambda-data-receiver\n"
+    aws cloudformation deploy \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --template-file iac/iac-lambda.yml --stack-name lambda-data-receiver \
+    --parameter-overrides $param
+}
+create-alb()
+{
+    echo -e "\nCreating Stack alb-data-receiver\n"
+    aws cloudformation deploy \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --template-file iac/iac-alb.yml \
+    --stack-name alb-data-receiver
+
+    url=$(aws cloudformation describe-stacks \
+        --query 'Stacks[?StackName==`alb-data-receiver`][].Outputs[?OutputKey==`DNSName`].OutputValue' \
+        --output text)
+    
+    echo -e "\nApplication's URL: http://$url"
+}
+case $1 in
+all)
+    check
+    create3
+    create-dynamodb
+    upload-artifact
+    create-lambda
+    create-alb;;
+update-app)
+    check
+    upload-artifact
+    create-lambda;;
+update-s3)
+    create3;;
+update-dynamodb)
+    create-dynamodb;;
+update-alb)
+    create-alb;;
+update-lambda-configuration)
+    check
+    create-lambda;;
+*)
+    echo -e "You can use:
+        deploy all: To create the AWS components and deploy the application.\n
+        deploy update-app: To upload and update your application.\n
+        deploy update-s3: To update only the S3 Stack\n
+        deploy update-dynamodb: To update only the DynamoDB Stack\n
+        deploy update-alb: To update only the ALB Stack\n
+        deploy update-lambda-configuration: To update only the Lambda Stack\n\t";;
+
+esac
