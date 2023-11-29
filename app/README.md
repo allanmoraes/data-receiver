@@ -1,28 +1,21 @@
-# data-receiver
+# lambda-data-receiver
 
-```json
-{
-  "id": 123,
-  "client": "Nome do Cliente",
-  "technology": "Tecnologia Utilizada",
-  "automated": true
-}
-```
+## Description
+This Python application receives a json data and insert into the DynamoDB Table. 
 
+It runs in Python 3.8 or higher.
+
+The table name is setup in a Lambda Function and use via environment variables.
+
+---
+
+## How to use
 ```bash
-curl -X POST -H "Content-Type: application/json" -d '{"id": 123, "client": "Nome do Cliente", "technology": "Tecnologia Utilizada", "automated": true}' https://your-api-endpoint.execute-api.us-east-1.amazonaws.com/your-resource
+curl --header "Content-Type: application/json" \
+  --request POST \
+  --data '{"name": "allan", "email": "email@aws.com"}' \
+  http://alb-da-LoadB-URL.elb.amazonaws.com
 ```
-
-```Python
-import requests
-import json
-
-url = 'https://your-api-endpoint.execute-api.us-east-1.amazonaws.com/your-resource'
-data = {"id": 123, "client": "Nome do Cliente", "technology": "Tecnologia Utilizada", "automated": true}
-
-headers = {'Content-Type': 'application/json'}
-response = requests.post(url, data=json.dumps(data), headers=headers)
-
-print(response.status_code)
-print(response.json())
-```
+---
+## How to deploy
+Read the main documentation [README.md](../README.md), section *To deploy/update the application*.
