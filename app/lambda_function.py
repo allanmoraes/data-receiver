@@ -2,7 +2,7 @@ import os
 import json
 import boto3
 
-dynamodb = boto3.resource('dynamodb', region_name=os.environ['AWS_REGION'])
+dynamodb = boto3.resource('dynamodb')
 table_name = os.environ['DYNAMODB_TABLE_NAME']
 table = dynamodb.Table(table_name)
 
@@ -10,39 +10,29 @@ def lambda_handler(event, context):
     try:
         data = json.loads(event['body'])
 
-        required_fields = ['id', 'client', 'technology', 'automated']
+        required_fields = ['name', 'email']
         for field in required_fields:
             if field not in data:
                 return {
                     'statusCode': 400,
-                    'body': json.dumps(f'O campo "{field}" é obrigatório.')
+                    'body': json.dumps(f'The field "{field}" is required.')
                 }
 
-        if not isinstance(data['id'], int):
+        if not isinstance(data['name'], str) or not isinstance(data['email'], str):
             return {
                 'statusCode': 400,
-                'body': json.dumps('O campo "id" deve ser um número inteiro.')
-            }
-        if not isinstance(data['client'], str) or not isinstance(data['technology'], str):
-            return {
-                'statusCode': 400,
-                'body': json.dumps('Os campos "client" e "technology" devem ser strings.')
-            }
-        if not isinstance(data['automated'], bool):
-            return {
-                'statusCode': 400,
-                'body': json.dumps('O campo "automated" deve ser um booleano.')
+                'body': json.dumps('The fields "name" and "email" should be string type.')
             }
 
         table.put_item(Item=data)
 
         return {
             'statusCode': 200,
-            'body': json.dumps('Dados inseridos com sucesso.')
+            'body': json.dumps('Success! Data have been included.')
         }
 
     except Exception as e:
         return {
             'statusCode': 500,
-            'body': json.dumps(f'Ocorreu um erro: {str(e)}')
+            'body': json.dumps(f'Something went wrong: {str(e)}')
         }
