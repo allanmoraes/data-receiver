@@ -1,11 +1,13 @@
 # lambda-data-receiver
 
 ## Description
-This Python application receives a json data and insert into the DynamoDB Table. 
+This Python application receives a JSON data and insert into DynamoDB Table.
 
 It runs in Python 3.8 or higher.
 
-The table name is setup in a Lambda Function and use via environment variables.
+The table name is setup in a Lambda Function as environment variable.
+
+CI/CD idea: [CICD.md](./CICD.md)
 
 ---
 
