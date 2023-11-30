@@ -32,42 +32,6 @@ Parameters:
     Default: lambda-data-receiver-role
 
 Resources:
-  LambdaSecurityGroup:
-    Type: AWS::EC2::SecurityGroup
-    Properties:
-      GroupName: !Ref LambdaSecurityGroupName
-      GroupDescription: 'Security Group for Lambda Function'
-      VpcId:
-        Fn::ImportValue:
-          Fn::Sub: "${NetworkStackName}-VPCId"
-      SecurityGroupIngress:
-        - IpProtocol: -1
-          CidrIp:
-            Fn::ImportValue:
-              Fn::Sub: "${NetworkStackName}-PublicSubnet1CidrBlock"
-        - IpProtocol: -1
-          CidrIp:
-            Fn::ImportValue:
-              Fn::Sub: "${NetworkStackName}-PublicSubnet2CidrBlock"
-        - IpProtocol: -1
-          CidrIp:
-            Fn::ImportValue:
-              Fn::Sub: "${NetworkStackName}-PublicSubnet3CidrBlock"
-      SecurityGroupEgress:
-        - IpProtocol: -1
-          CidrIp:
-            Fn::ImportValue:
-              Fn::Sub: "${NetworkStackName}-PrimaryCidrBlock"
-      Tags:
-        - Key: Name
-          Value: !Sub ${LambdaSecurityGroupName}
-        - Key: managedby
-          Value: cloudformation
-        - Key: owner-team
-          Value: !Sub ${OwnerTeam}
-        - Key: project
-          Value: !Sub ${Project}
-
   LambdaFunction:
       Type: AWS::Lambda::Function
       Properties:
