@@ -13,12 +13,6 @@ Parameters:
   Project:
     Type: String
     Default: https://github.com/allanmoraes/lambda-data-receiver
-  WriteDynamoDBRoleName:
-    Type: String
-    Default: LambdaWriteDynamoDBRole
-  ReadDynamoDBRoleName:
-    Type: String
-    Default: LambdaReadDynamoDBRole  
 
 Resources:
   DataReceiverDynamoDBTable:
