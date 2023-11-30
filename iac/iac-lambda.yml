@@ -125,13 +125,13 @@ Resources:
 
 Outputs:
   LambdaFunctionName:
-    Description: 'ARN da Lambda Function'
+    Description: 'Lambda Function's name'
     Value: !Ref LambdaFunction
     Export:
       Name: "lambda-data-receiver-LambdaFunctionName"
 
   LambdaFunctionArn:
-    Description: 'ARN da Lambda Function'
+    Description: 'Lambda Function's ARN'
     Value: !GetAtt LambdaFunction.Arn
     Export:
       Name: "lambda-data-receiver-LambdaFunctionArn"
