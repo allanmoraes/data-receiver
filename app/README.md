@@ -9,6 +9,8 @@ The table name is setup in a Lambda Function as environment variable.
 
 CI/CD idea: [CICD.md](./CICD.md)
 
+![App](./docs/images/app.jpg)
+
 ---
 
 ## How to use
