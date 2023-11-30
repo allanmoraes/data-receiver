@@ -15,8 +15,6 @@ Using this project, you will create this itens:
 - All Rules, Policies and SecurityGroups
 - An Python application, used to receive data and insert into the DynamoDB Table.
 
-Read [IAC DOCS](./iac/README.md) to have a better understanding about what each Stack does.
-
 ---
 ## How to use
 There is a shell scrit in this repo, create to help the creation and deploy.
