@@ -28,7 +28,7 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
-            'body': json.dumps('Success! Data have been included.')
+            'body': json.dumps('Success! Data has been included.')
         }
 
     except Exception as e:
