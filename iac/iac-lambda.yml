@@ -92,25 +92,18 @@ Resources:
                 Action:
                   - 's3:GetObject'
                   - 's3:ListBucket'
-                  - 's3:PutObject'
                 Resource:
                   - Fn::ImportValue:
                       Fn::Sub: "${S3BucketStackName}-S3BucketAppArn"
-                  - Fn::ImportValue:
-                      Fn::Sub: "${S3BucketStackName}-S3BucketExportArn"
         - PolicyName: DynamoDBRWPolicy
           PolicyDocument:
             Version: '2012-10-17'
             Statement:
               - Effect: Allow
                 Action:
-                  - 'dynamodb:BatchGetItem'
                   - 'dynamodb:BatchWriteItem'
                   - 'dynamodb:PutItem' 
                   - 'dynamodb:DeleteItem'
-                  - 'dynamodb:GetItem'
-                  - 'dynamodb:Scan'
-                  - 'dynamodb:Query'
                   - 'dynamodb:UpdateItem'
                 Resource:
                   - Fn::ImportValue:
@@ -125,13 +118,13 @@ Resources:
 
 Outputs:
   LambdaFunctionName:
-    Description: 'Lambda Function's name'
+    Description: 'Lambda Function name'
     Value: !Ref LambdaFunction
     Export:
       Name: "lambda-data-receiver-LambdaFunctionName"
 
   LambdaFunctionArn:
-    Description: 'Lambda Function's ARN'
+    Description: 'Lambda Function ARN'
     Value: !GetAtt LambdaFunction.Arn
     Export:
       Name: "lambda-data-receiver-LambdaFunctionArn"

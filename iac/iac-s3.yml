@@ -5,20 +5,12 @@ Parameters:
     Type: String
     Default: lambda-data-receiver
 
-  S3BucketExportName:
-    Type: String
-    Default: lambda-data-receiver-exported-data
-
 Resources:
   S3BucketApp:
     Type: 'AWS::S3::Bucket'
     Properties:
       BucketName: !Ref S3BucketAppName
-  
-  S3BucketExport:
-    Type: 'AWS::S3::Bucket'
-    Properties:
-      BucketName: !Ref S3BucketExportName
+
 
 Outputs:
   S3BucketAppName:
@@ -32,15 +24,3 @@ Outputs:
     Value: !GetAtt S3BucketApp.Arn
     Export:
       Name: 's3-lambda-data-receiver-S3BucketAppArn'
-
-  S3BucketExportName:
-    Description: A reference to the created S3 Bucket
-    Value: !Ref S3BucketExport
-    Export:
-      Name: 's3-lambda-data-receiver-S3BucketExportName'
-
-  S3BucketExportArn:
-    Description: A reference to the created S3 Bucket
-    Value: !GetAtt S3BucketExport.Arn
-    Export:
-      Name: 's3-lambda-data-receiver-S3BucketExportArn'
