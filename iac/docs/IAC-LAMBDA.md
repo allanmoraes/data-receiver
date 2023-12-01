@@ -48,5 +48,5 @@ Read the main documentation [README.md](../README.md), section *How to use*.
 
 | Key                | Value                                                                          | Description            | Export name                             |
 |--------------------|--------------------------------------------------------------------------------|------------------------|-----------------------------------------|
-| LambdaFunctionArn  | arn:aws:lambda:us-east-2:921114505777:function:production-lambda-data-receiver | Lambda Function's ARN | lambda-data-receiver-LambdaFunctionArn  |
+| LambdaFunctionArn  | arn:aws:lambda:us-east-2:12345:function:production-lambda-data-receiver | Lambda Function's ARN | lambda-data-receiver-LambdaFunctionArn  |
 | LambdaFunctionName | production-lambda-data-receiver                                                | Lambda Function's name | lambda-data-receiver-LambdaFunctionName |
