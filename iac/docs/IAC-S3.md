@@ -15,13 +15,10 @@ This template are parametrized
 
 - **S3BucketAppName:** The S3 Bucket used to store the Python application
     - **Default:** lambda-data-receiver
-- **S3BucketExportName:** The S3 Bucket used to store the DynamoDB informations
-    - **Default:** lambda-data-receiver-exported-data
 ---
 
 ## How to run
 Read the main documentation [README.md](../README.md), section *How to use*.
-
 ---
 
 ## Outputs
@@ -29,8 +26,6 @@ Read the main documentation [README.md](../README.md), section *How to use*.
 This template has outputs and this outputs can be used by anothe Stack.
 - **S3BucketAppName:** A reference to the created S3 Bucket's name
 - **S3BucketAppArn:** A reference to the created S3 Bucket's ARN
-- **S3BucketExportName:** A reference to the created S3 Bucket's name
-- **S3BucketExportArn:** A reference to the created S3 Bucket's ARN
 
 | Key                | Value                                           | Description                          | Export name                                |
 |--------------------|-------------------------------------------------|--------------------------------------|--------------------------------------------|
