@@ -1,5 +1,4 @@
 #!/bin/bash
-
 check()
 {
     awscheck=$(aws sts get-caller-identity)
@@ -24,7 +23,7 @@ check()
         fi
     fi
 }
-create3() 
+creates3() 
 {
     echo -e "\nCreating Stack s3-data-receiver\n"
     aws cloudformation deploy \
@@ -74,7 +73,7 @@ create-alb()
 case $1 in
 all)
     check
-    create3
+    creates3
     create-dynamodb
     upload-artifact
     create-lambda
@@ -84,7 +83,7 @@ update-app)
     upload-artifact
     create-lambda;;
 update-s3)
-    create3;;
+    creates3;;
 update-dynamodb)
     create-dynamodb;;
 update-alb)
