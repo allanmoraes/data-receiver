@@ -8,7 +8,7 @@ This project has all components to deploy an application in AWS.
 ### What it is created?
 Using this project, you will create this itens:
 
-- Two S3 Buckets
+- One S3 Bucket
 - One DynamoDB Table
 - One Lambda Function
 - One Application Load Balancer

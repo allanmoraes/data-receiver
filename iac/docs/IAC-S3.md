@@ -36,5 +36,3 @@ This template has outputs and this outputs can be used by anothe Stack.
 |--------------------|-------------------------------------------------|--------------------------------------|--------------------------------------------|
 | S3BucketAppArn     | arn:aws:s3:::lambda-data-receiver               | A reference to the created S3 Bucket | s3-lambda-data-receiver-S3BucketAppArn     |
 | S3BucketAppName    | lambda-data-receiver                            | A reference to the created S3 Bucket | s3-lambda-data-receiver-S3BucketAppName    |
-| S3BucketExportArn  | arn:aws:s3:::lambda-data-receiver-exported-data | A reference to the created S3 Bucket | s3-lambda-data-receiver-S3BucketExportArn  |
-| S3BucketExportName | lambda-data-receiver-exported-data              | A reference to the created S3 Bucket | s3-lambda-data-receiver-S3BucketExportName |
